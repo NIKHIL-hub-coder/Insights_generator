@@ -39,16 +39,22 @@ const prompt = ai.definePrompt({
   name: 'generateDataInsightsPrompt',
   input: {schema: GenerateDataInsightsInputSchema},
   output: {schema: GenerateDataInsightsOutputSchema},
-  prompt: `You are an expert data analyst. Analyze the following data and generate key insights and potential trends. The data could be in CSV, JSON, or TXT format. If it originated from an XLSX file, it has been converted from its first sheet to CSV format. If a query is provided, focus your analysis accordingly.
+  prompt: `You are an expert data analyst. Your task is to analyze the provided dataset and generate insightful observations. The data could be in CSV, JSON, or TXT format. If it originated from an XLSX file, it has been converted from its first sheet to CSV format.
 
 Data:
 {{{data}}}
 
-Query (Optional):
+Analysis Request:
 {{#if query}}
-  {{query}}
+  Focus your analysis on the following specific query:
+  {{{query}}}
 {{else}}
-  Provide a general overview of the data.
+  Please perform a comprehensive analysis. Dig deep into the data to:
+  1. Identify key trends and patterns (e.g., sales growth/decline over time, seasonal variations, correlations between different data points).
+  2. Highlight significant positive performers (e.g., best-selling products, top-performing regions or categories, most effective strategies).
+  3. Pinpoint areas that are underperforming or may require attention (e.g., products with declining sales, regions with low activity, potential bottlenecks or issues).
+  4. Provide a concise summary of your most important findings, focusing on actionable insights and data-driven recommendations where possible.
+  Present your findings in a clear, structured manner.
 {{/if}}`,
 });
 
@@ -63,3 +69,4 @@ const generateDataInsightsFlow = ai.defineFlow(
     return output!;
   }
 );
+
