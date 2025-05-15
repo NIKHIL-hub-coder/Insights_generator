@@ -111,7 +111,7 @@ export default function InsightFlowPage() {
         </div>
       </main>
       <footer className="py-6 text-center text-sm text-muted-foreground border-t mt-auto">
-        © {new Date().getFullYear()} InsightFlow. Powered by AI.
+        © {new Date().getFullYear()} Nikhil kumar. Powered by AI.
       </footer>
     </div>
   );
