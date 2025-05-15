@@ -37,7 +37,18 @@ const ragBasedQuestionAnsweringPrompt = ai.definePrompt({
   name: 'ragBasedQuestionAnsweringPrompt',
   input: {schema: RagBasedQuestionAnsweringInputSchema},
   output: {schema: RagBasedQuestionAnsweringOutputSchema},
-  prompt: `Answer the following question based on the provided data. The data could be in CSV, JSON, or TXT format. If it originated from an XLSX file, it has been converted from its first sheet to CSV format.\n\nData:\n{{{data}}}\n\nQuestion: {{{question}}}\n\nAnswer:`,
+  prompt: `You are an AI assistant. Your task is to answer the question based *only* on the provided dataset.
+The dataset is provided as a string, typically in CSV format (even if originally from XLSX, JSON, or TXT, it has been prepared for you).
+
+START OF DATASET
+{{{data}}}
+END OF DATASET
+
+Question: {{{question}}}
+
+Based *solely* on the dataset provided above, answer the question. If the answer cannot be found in the dataset, clearly state that the information is not available in the provided data. Do not invent information.
+
+Answer:`,
 });
 
 const ragBasedQuestionAnsweringFlow = ai.defineFlow(
