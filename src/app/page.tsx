@@ -6,36 +6,51 @@ import { Header } from '@/components/layout/Header';
 import { FileUpload } from '@/components/insight-flow/FileUpload';
 import { QuerySection } from '@/components/insight-flow/QuerySection';
 import { InsightDisplay } from '@/components/insight-flow/InsightDisplay';
-import { processDataAndGetGeneralInsights, processDataAndAskQuestion } from './actions';
-import { Button } from '@/components/ui/button';
-import { ArrowDown, Wand2 } from 'lucide-react';
+import { processDataAndGetGeneralInsights, processDataAndAskQuestion, type FileProcessInput } from './actions';
 
 export default function InsightFlowPage() {
   const [uploadedDataContent, setUploadedDataContent] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadedFileType, setUploadedFileType] = useState<string | null>(null);
+  const [isBinaryData, setIsBinaryData] = useState<boolean>(false);
+  
   const [insights, setInsights] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [processingType, setProcessingType] = useState<'question' | 'general' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleFileUploaded = (content: string, fileName: string) => {
+  const handleFileUploaded = (content: string, fileName: string, fileType: string, isBinary: boolean) => {
     setUploadedDataContent(content);
     setUploadedFileName(fileName);
+    setUploadedFileType(fileType);
+    setIsBinaryData(isBinary);
     // Reset previous results when a new file is uploaded or cleared
     setInsights(null);
     setError(null);
   };
 
-  const handleGenerateInsights = async () => {
-    if (!uploadedDataContent) {
+  const getFileProcessInput = (): FileProcessInput | null => {
+    if (!uploadedDataContent || !uploadedFileName) {
       setError("Please upload data first.");
-      return;
+      return null;
     }
+    return {
+      content: uploadedDataContent,
+      fileName: uploadedFileName,
+      fileType: uploadedFileType,
+      isBinary: isBinaryData,
+    };
+  };
+
+  const handleGenerateInsights = async () => {
+    const fileInfo = getFileProcessInput();
+    if (!fileInfo) return;
+
     setIsLoading(true);
     setProcessingType('general');
     setError(null);
     setInsights(null);
-    const result = await processDataAndGetGeneralInsights(uploadedDataContent);
+    const result = await processDataAndGetGeneralInsights(fileInfo);
     if (result.insights) {
       setInsights(result.insights);
     } else {
@@ -46,15 +61,14 @@ export default function InsightFlowPage() {
   };
 
   const handleAskQuestion = async (question: string) => {
-    if (!uploadedDataContent) {
-      setError("Please upload data first.");
-      return;
-    }
+    const fileInfo = getFileProcessInput();
+    if (!fileInfo) return;
+    
     setIsLoading(true);
     setProcessingType('question');
     setError(null);
     setInsights(null);
-    const result = await processDataAndAskQuestion(uploadedDataContent, question);
+    const result = await processDataAndAskQuestion(fileInfo, question);
     if (result.answer) {
       setInsights(result.answer);
     } else {

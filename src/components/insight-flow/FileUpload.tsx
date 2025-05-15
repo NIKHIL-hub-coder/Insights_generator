@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 
 interface FileUploadProps {
-  onFileUploaded: (content: string, fileName: string) => void;
+  onFileUploaded: (content: string, fileName: string, fileType: string, isBinary: boolean) => void;
   disabled?: boolean;
 }
 
@@ -19,21 +19,12 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const { toast } = useToast();
 
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      processFile(file);
-    }
-  }, [onFileUploaded, toast]);
+  const processFile = useCallback((file: File) => {
+    const allowedTextTypes = ['text/csv', 'application/json', 'text/plain'];
+    const xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    const isXlsx = file.type === xlsxMimeType || file.name.endsWith('.xlsx');
 
-  const processFile = (file: File) => {
-    const allowedTypes = [
-      'text/csv', 
-      'application/json', 
-      'text/plain', 
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX MIME type
-    ];
-    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.xlsx')) {
+    if (!allowedTextTypes.includes(file.type) && !isXlsx) {
       toast({
         title: 'Invalid File Type',
         description: `Please upload a CSV, JSON, TXT, or XLSX file. Got: ${file.type || file.name.split('.').pop()}`,
@@ -44,15 +35,30 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
     }
 
     const reader = new FileReader();
+
     reader.onload = (e) => {
-      const content = e.target?.result as string;
-      setSelectedFile(file);
-      onFileUploaded(content, file.name);
-      toast({
-        title: 'File Uploaded',
-        description: `${file.name} has been successfully loaded.`,
-      });
+      if (isXlsx) {
+        const arrayBuffer = e.target?.result as ArrayBuffer;
+        const base64String = btoa(
+          new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+        );
+        setSelectedFile(file);
+        onFileUploaded(base64String, file.name, file.type, true);
+        toast({
+          title: 'File Uploaded',
+          description: `${file.name} (XLSX) has been successfully loaded. It will be converted for analysis.`,
+        });
+      } else {
+        const content = e.target?.result as string;
+        setSelectedFile(file);
+        onFileUploaded(content, file.name, file.type, false);
+        toast({
+          title: 'File Uploaded',
+          description: `${file.name} has been successfully loaded.`,
+        });
+      }
     };
+
     reader.onerror = () => {
       toast({
         title: 'File Read Error',
@@ -61,9 +67,21 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
       });
       setSelectedFile(null);
     };
-    reader.readAsText(file);
-  };
+
+    if (isXlsx) {
+      reader.readAsArrayBuffer(file);
+    } else {
+      reader.readAsText(file);
+    }
+  }, [onFileUploaded, toast]);
   
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      processFile(file);
+    }
+  }, [processFile]);
+
   const handleDrop = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     event.stopPropagation();
@@ -74,7 +92,7 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
     if (file) {
       processFile(file);
     }
-  }, [onFileUploaded, toast, disabled]);
+  }, [processFile, disabled]);
 
   const handleDragOver = useCallback((event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -91,7 +109,7 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
 
   const clearFile = () => {
     setSelectedFile(null);
-    onFileUploaded('', ''); // Notify parent that file is cleared
+    onFileUploaded('', '', '', false); // Notify parent that file is cleared
   };
 
   return (

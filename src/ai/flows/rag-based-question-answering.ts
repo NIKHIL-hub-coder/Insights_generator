@@ -14,7 +14,7 @@ import {z} from 'genkit';
 
 const RagBasedQuestionAnsweringInputSchema = z.object({
   question: z.string().describe('The question to ask about the data.'),
-  data: z.string().describe('The data to answer the question based on (CSV, JSON, TXT, or raw text extracted from XLSX).'),
+  data: z.string().describe('The data to answer the question based on. This could be CSV, JSON, or TXT content directly, or data extracted from the first sheet of an XLSX file and converted to CSV format.'),
 });
 export type RagBasedQuestionAnsweringInput = z.infer<
   typeof RagBasedQuestionAnsweringInputSchema
@@ -37,7 +37,7 @@ const ragBasedQuestionAnsweringPrompt = ai.definePrompt({
   name: 'ragBasedQuestionAnsweringPrompt',
   input: {schema: RagBasedQuestionAnsweringInputSchema},
   output: {schema: RagBasedQuestionAnsweringOutputSchema},
-  prompt: `Answer the following question based on the provided data. The data could be in CSV, JSON, TXT, or raw text extracted from an XLSX file.\n\nData:\n{{{data}}}\n\nQuestion: {{{question}}}\n\nAnswer:`,
+  prompt: `Answer the following question based on the provided data. The data could be in CSV, JSON, or TXT format. If it originated from an XLSX file, it has been converted from its first sheet to CSV format.\n\nData:\n{{{data}}}\n\nQuestion: {{{question}}}\n\nAnswer:`,
 });
 
 const ragBasedQuestionAnsweringFlow = ai.defineFlow(

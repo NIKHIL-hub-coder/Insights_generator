@@ -15,7 +15,7 @@ import {z} from 'genkit';
 const GenerateDataInsightsInputSchema = z.object({
   data: z
     .string()
-    .describe('The data to analyze, as a string (CSV, JSON, TXT, or XLSX content). For XLSX, the raw text content will be provided.'),
+    .describe('The data to analyze, as a string. This could be CSV, JSON, or TXT content directly, or data extracted from the first sheet of an XLSX file and converted to CSV format.'),
   query: z.string().optional().describe('Optional query to guide the insight generation.'),
 });
 export type GenerateDataInsightsInput = z.infer<
@@ -39,10 +39,10 @@ const prompt = ai.definePrompt({
   name: 'generateDataInsightsPrompt',
   input: {schema: GenerateDataInsightsInputSchema},
   output: {schema: GenerateDataInsightsOutputSchema},
-  prompt: `You are an expert data analyst. Analyze the following data and generate key insights and potential trends. The data could be in CSV, JSON, TXT, or raw text extracted from an XLSX file. If a query is provided, focus your analysis accordingly.
+  prompt: `You are an expert data analyst. Analyze the following data and generate key insights and potential trends. The data could be in CSV, JSON, or TXT format. If it originated from an XLSX file, it has been converted from its first sheet to CSV format. If a query is provided, focus your analysis accordingly.
 
 Data:
-{{data}}
+{{{data}}}
 
 Query (Optional):
 {{#if query}}
