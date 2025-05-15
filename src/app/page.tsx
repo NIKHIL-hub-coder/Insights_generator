@@ -73,7 +73,7 @@ export default function InsightFlowPage() {
             Unlock Data Insights with AI
           </h1>
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            Upload your data (CSV, JSON, TXT), ask questions, or let our AI generate key insights and trends for you.
+            Upload your data (CSV, JSON, TXT, XLSX), ask questions, or let our AI generate key insights and trends for you.
           </p>
         </div>
 

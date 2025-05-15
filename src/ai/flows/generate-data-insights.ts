@@ -1,3 +1,4 @@
+
 // src/ai/flows/generate-data-insights.ts
 'use server';
 /**
@@ -14,7 +15,7 @@ import {z} from 'genkit';
 const GenerateDataInsightsInputSchema = z.object({
   data: z
     .string()
-    .describe('The data to analyze, as a string (CSV, JSON, TXT).'),
+    .describe('The data to analyze, as a string (CSV, JSON, TXT, or XLSX content). For XLSX, the raw text content will be provided.'),
   query: z.string().optional().describe('Optional query to guide the insight generation.'),
 });
 export type GenerateDataInsightsInput = z.infer<
@@ -38,7 +39,7 @@ const prompt = ai.definePrompt({
   name: 'generateDataInsightsPrompt',
   input: {schema: GenerateDataInsightsInputSchema},
   output: {schema: GenerateDataInsightsOutputSchema},
-  prompt: `You are an expert data analyst. Analyze the following data and generate key insights and potential trends. If a query is provided, focus your analysis accordingly.
+  prompt: `You are an expert data analyst. Analyze the following data and generate key insights and potential trends. The data could be in CSV, JSON, TXT, or raw text extracted from an XLSX file. If a query is provided, focus your analysis accordingly.
 
 Data:
 {{data}}

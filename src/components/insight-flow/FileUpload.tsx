@@ -27,11 +27,16 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
   }, [onFileUploaded, toast]);
 
   const processFile = (file: File) => {
-    const allowedTypes = ['text/csv', 'application/json', 'text/plain'];
-    if (!allowedTypes.includes(file.type)) {
+    const allowedTypes = [
+      'text/csv', 
+      'application/json', 
+      'text/plain', 
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // XLSX MIME type
+    ];
+    if (!allowedTypes.includes(file.type) && !file.name.endsWith('.xlsx')) {
       toast({
         title: 'Invalid File Type',
-        description: `Please upload a CSV, JSON, or TXT file. Got: ${file.type}`,
+        description: `Please upload a CSV, JSON, TXT, or XLSX file. Got: ${file.type || file.name.split('.').pop()}`,
         variant: 'destructive',
       });
       setSelectedFile(null);
@@ -96,7 +101,7 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
           <UploadCloud className="h-6 w-6 text-primary" />
           Upload Your Data
         </CardTitle>
-        <CardDescription>Drag & drop or click to upload a CSV, JSON, or TXT file.</CardDescription>
+        <CardDescription>Drag & drop or click to upload a CSV, JSON, TXT, or XLSX file.</CardDescription>
       </CardHeader>
       <CardContent>
         {selectedFile ? (
@@ -133,13 +138,13 @@ export function FileUpload({ onFileUploaded, disabled }: FileUploadProps) {
             <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-accent">Click to upload</span> or drag and drop
             </p>
-            <p className="text-xs text-muted-foreground">CSV, JSON, or TXT files</p>
+            <p className="text-xs text-muted-foreground">CSV, JSON, TXT, or XLSX files</p>
             <Input
               id="file-upload-input"
               type="file"
               className="hidden"
               onChange={handleFileChange}
-              accept=".csv,.json,.txt,text/csv,application/json,text/plain"
+              accept=".csv,.json,.txt,.xlsx,text/csv,application/json,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
               disabled={disabled}
             />
           </div>
